@@ -467,6 +467,7 @@ endif
 
 # Copy missing instrument samples from the music sound banks
 _ := $(shell $(PYTHON) $(TOOLS_DIR)/copy_extended_sounds.py)
+_ := $(shell $(PYTHON) $(TOOLS_DIR)/copy_deluxe_sounds.py)
 
 #==============================================================================#
 # Target Executable and Sources                                                #
