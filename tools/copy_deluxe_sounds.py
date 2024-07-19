@@ -15,6 +15,8 @@ if not os.path.exists(SAMPLE_PATH):
     os.makedirs(SAMPLE_PATH)
 
 for path, files in instrument_targets.items():
-    fileList = files if files[0] != "*" else os.listdir(path)
-    for file in fileList:
-        shutil.copyfile(os.path.join(path, file), os.path.join(SAMPLE_PATH, file))
+    file_list = files if files[0] != "*" else os.listdir(path)
+    for file in file_list:
+        file_path = os.path.join(SAMPLE_PATH, file)
+        if not os.path.exists(file_path):
+            shutil.copyfile(os.path.join(path, file), file_path)
