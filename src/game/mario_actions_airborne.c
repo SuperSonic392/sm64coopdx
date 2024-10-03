@@ -674,9 +674,12 @@ s32 act_long_jump(struct MarioState *m) {
 
     play_mario_sound(m, SOUND_ACTION_TERRAIN_JUMP, CHAR_SOUND_YAHOO);
 
-    if (m->floor->type == SURFACE_VERTICAL_WIND && m->actionState == 0) {
-        play_character_sound(m, CHAR_SOUND_HERE_WE_GO);
-        m->actionState = 1;
+    if(m->floor != NULL)
+    {
+        if (m->floor->type == SURFACE_VERTICAL_WIND && m->actionState == 0) {
+            play_character_sound(m, CHAR_SOUND_HERE_WE_GO);
+            m->actionState = 1;
+        }
     }
 
     common_air_action_step(m, ACT_LONG_JUMP_LAND, animation, AIR_STEP_CHECK_LEDGE_GRAB);
@@ -2206,7 +2209,7 @@ s32 act_special_triple_jump(struct MarioState *m) {
 
 s32 check_common_airborne_cancels(struct MarioState *m) {
     if (!m) { return 0; }
-    if (m->pos[1] < m->waterLevel - 100) {
+    if (m->pos[1] < m->waterLevel - 100 && m->floor == NULL) {
         return set_water_plunge_action(m);
     }
 

@@ -1519,10 +1519,6 @@ copyPlayerGoto:;
     // and check for the floor there.
     // This can cause errant behavior when combined with astral projection,
     // since the graphical position was not Mario's previous location.
-    if (m->floor == NULL) {
-        vec3f_copy(m->pos, m->marioObj->header.gfx.pos);
-        m->floorHeight = find_floor(m->pos[0], m->pos[1], m->pos[2], &m->floor);
-    }
 
     m->ceilHeight = vec3f_mario_ceil(&m->pos[0], m->floorHeight, &m->ceil);
     gasLevel = find_poison_gas_level(m->pos[0], m->pos[2]);
@@ -1549,30 +1545,26 @@ copyPlayerGoto:;
             m->input |= INPUT_OFF_FLOOR;
         }
 
-        if (m->pos[1] < (m->waterLevel - 10)) {
-            m->input |= INPUT_IN_WATER;
-        }
-
         if (m->pos[1] < (gasLevel - 100.0f)) {
             m->input |= INPUT_IN_POISON_GAS;
         }
 
     } else {
-        if (!copiedPlayer) {
+        //if (!copiedPlayer) {
             // try to prevent OOB by copying position of other player
-            struct Surface* floor2 = NULL;
-            for (s32 i = 0; i < MAX_PLAYERS; i++) {
-                struct MarioState* m2 = &gMarioStates[i];
-                if (m == m2) { continue; }
-                find_floor(m2->pos[0], m2->pos[1], m2->pos[2], &floor2);
-                if (floor2 == NULL) { continue; }
-                LOG_INFO("OOB! teleporting to player with local index %d", i);
-                vec3f_copy(m->pos, m2->pos);
-                copiedPlayer = TRUE;
-                goto copyPlayerGoto;
-            }
-        }
-        level_trigger_warp(m, WARP_OP_DEATH);
+        //    struct Surface* floor2 = NULL;
+        //    for (s32 i = 0; i < MAX_PLAYERS; i++) {
+        //        struct MarioState* m2 = &gMarioStates[i];
+        //        if (m == m2) { continue; }
+        //        find_floor(m2->pos[0], m2->pos[1], m2->pos[2], &floor2);
+        //        if (floor2 == NULL) { continue; }
+        //        LOG_INFO("OOB! teleporting to player with local index %d", i);
+        //        vec3f_copy(m->pos, m2->pos);
+        //        copiedPlayer = TRUE;
+        //        goto copyPlayerGoto;
+        //    }
+        //}
+        //level_trigger_warp(m, WARP_OP_DEATH);
     }
 }
 
@@ -2048,11 +2040,6 @@ s32 execute_mario_action(UNUSED struct Object *o) {
                 gMarioState->isSnoring = FALSE;
         }
 
-        // If Mario is OOB, stop executing actions.
-        if (gMarioState->floor == NULL) {
-            return 0;
-        }
-
         // don't update mario when in a cutscene
         if (gMarioState->playerIndex == 0) {
             extern s16 gDialogID;
@@ -2169,7 +2156,7 @@ s32 execute_mario_action(UNUSED struct Object *o) {
 s32 force_idle_state(struct MarioState* m) {
     if (!m) { return 0; }
     u8 underWater = (m->pos[1] < ((f32)m->waterLevel));
-    return set_mario_action(m, underWater ? ACT_WATER_IDLE : ACT_IDLE, 0);
+    return set_mario_action(m, ACT_IDLE, 0);
 }
 
 /**************************************************
@@ -2239,7 +2226,7 @@ void init_single_mario(struct MarioState* m) {
 
     m->marioObj->header.gfx.pos[1] = m->pos[1];
 
-    m->action = (m->pos[1] <= (m->waterLevel - 100)) ? ACT_WATER_IDLE : ACT_IDLE;
+    m->action = ACT_IDLE;
 
     update_mario_info_for_cam(m);
     m->marioBodyState->punchState = 0;

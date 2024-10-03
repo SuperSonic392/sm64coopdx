@@ -295,15 +295,6 @@ static s32 perform_ground_quarter_step(struct MarioState *m, Vec3f nextPos) {
 
     mario_update_wall(m, &upperWcd);
 
-    if (floor == NULL) {
-        if (gServerSettings.bouncyLevelBounds != BOUNCY_LEVEL_BOUNDS_OFF) {
-            m->faceAngle[1] += 0x8000;
-            mario_set_forward_vel(m, gServerSettings.bouncyLevelBounds == BOUNCY_LEVEL_BOUNDS_ON_CAP ? CLAMP(1.5f * m->forwardVel, -500, 500) : 1.5f * m->forwardVel);
-        }
-        smlua_call_event_hooks_mario_param(HOOK_ON_COLLIDE_LEVEL_BOUNDS, m);
-        return GROUND_STEP_HIT_WALL_STOP_QSTEPS;
-    }
-
     if ((m->action & ACT_FLAG_RIDING_SHELL) && floorHeight < waterLevel) {
         floorHeight = waterLevel;
         floor = &gWaterSurfacePseudoFloor;
@@ -465,7 +456,7 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
     resolve_and_return_wall_collisions_data(nextPos, 30.0f, 50.0f, &lowerWcd);
 
     floorHeight = find_floor(nextPos[0], nextPos[1], nextPos[2], &floor);
-    ceilHeight = vec3f_mario_ceil(nextPos, floorHeight, &ceil);
+    ceilHeight = vec3f_mario_ceil(nextPos, nextPos[1], &ceil);
 
     waterLevel = find_water_level(nextPos[0], nextPos[2]);
 
@@ -474,21 +465,6 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
     //! The water pseudo floor is not referenced when your intended qstep is
     // out of bounds, so it won't detect you as landing.
 
-    if (floor == NULL) {
-        if (nextPos[1] <= m->floorHeight) {
-            m->pos[1] = m->floorHeight;
-            return AIR_STEP_LANDED;
-        }
-
-        m->pos[1] = nextPos[1];
-        if (gServerSettings.bouncyLevelBounds != BOUNCY_LEVEL_BOUNDS_OFF) {
-            m->faceAngle[1] += 0x8000;
-            mario_set_forward_vel(m, gServerSettings.bouncyLevelBounds == BOUNCY_LEVEL_BOUNDS_ON_CAP ? CLAMP(1.5f * m->forwardVel, -500, 500) : 1.5f * m->forwardVel);
-        }
-        smlua_call_event_hooks_mario_param(HOOK_ON_COLLIDE_LEVEL_BOUNDS, m);
-        return AIR_STEP_HIT_WALL;
-    }
-
     if ((m->action & ACT_FLAG_RIDING_SHELL) && floorHeight < waterLevel) {
         floorHeight = waterLevel;
         floor = &gWaterSurfacePseudoFloor;
@@ -496,6 +472,8 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
     }
 
     //! This check uses f32, but findFloor uses short (overflow jumps)
+    if(floor != NULL)
+    {
     if (nextPos[1] <= floorHeight) {
         if (ceilHeight - floorHeight > m->marioObj->hitboxHeight) {
             m->pos[0] = nextPos[0];
@@ -510,7 +488,7 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
         m->pos[1] = floorHeight;
         return AIR_STEP_LANDED;
     }
-
+    }
     if (nextPos[1] + m->marioObj->hitboxHeight > ceilHeight) {
         if (m->vel[1] >= 0.0f) {
             m->vel[1] = 0.0f;

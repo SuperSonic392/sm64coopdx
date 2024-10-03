@@ -350,10 +350,6 @@ s32 perform_hanging_step(struct MarioState *m, Vec3f nextPos) {
 
     floorHeight = find_floor(nextPos[0], nextPos[1], nextPos[2], &floor);
     ceilHeight = vec3f_mario_ceil(nextPos, floorHeight, &ceil);
-
-    if (floor == NULL) {
-        return HANG_HIT_CEIL_OR_OOB;
-    }
     if (ceil == NULL) {
         return HANG_LEFT_CEIL;
     }
@@ -896,11 +892,11 @@ s32 act_tornado_twirling(struct MarioState *m) {
         m->floorHeight = floorHeight;
         vec3f_copy(m->pos, nextPos);
     } else {
-        if (nextPos[1] >= m->floorHeight) {
-            m->pos[1] = nextPos[1];
-        } else {
-            m->pos[1] = m->floorHeight;
-        }
+        //if (nextPos[1] >= m->floorHeight) {
+        //    m->pos[1] = nextPos[1];
+        //} else {
+        //    m->pos[1] = m->floorHeight;
+        //}
     }
 
     m->actionTimer++;
@@ -1125,9 +1121,6 @@ s32 act_bubbled(struct MarioState* m) {
 
 s32 check_common_automatic_cancels(struct MarioState *m) {
     if (!m) { return 0; }
-    if (m->pos[1] < m->waterLevel - 100) {
-        return set_water_plunge_action(m);
-    }
 
     return FALSE;
 }

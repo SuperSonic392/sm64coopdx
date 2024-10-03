@@ -95,10 +95,6 @@ u32 perform_water_full_step(struct MarioState *m, Vec3f nextPos) {
     floorHeight = find_floor(nextPos[0], nextPos[1], nextPos[2], &floor);
     ceilHeight = vec3f_mario_ceil(nextPos, floorHeight, &ceil);
 
-    if (floor == NULL) {
-        return WATER_STEP_CANCELLED;
-    }
-
     if (nextPos[1] >= floorHeight) {
         if (ceilHeight - nextPos[1] >= 160.0f) {
             vec3f_copy(m->pos, nextPos);
